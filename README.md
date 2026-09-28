@@ -7,7 +7,9 @@ The fast way to use mirrors.cernet.edu.cn in your container.
 Debian and Ubuntu (including Ubuntu Ports) use the CERNET APT mirrorlist API
 with APT 1.6 or newer. Older APT versions use the CERNET mirror URL directly.
 Both traditional sources.list and DEB822 .sources files are supported.
-Security updates also use mirrorlist, without the optional official_index parameter.
+Security updates use `official_index=1` with mirrorlist to prefer official indexes.
+The scripts use the separate security entries provided by the official base images,
+including in Ubuntu DEB822 files.
 
 Fedora and Rocky Linux use the CERNET RPM mirrorlist API. Alpine and Arch Linux
 use the CERNET mirror URL directly.

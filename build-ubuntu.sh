@@ -6,6 +6,8 @@ while read tag; do
     echo $tag | grep -q '-' && continue
     dockerfile=$(mktemp)
     printf 'FROM ubuntu:%s\n' "$tag" > "$dockerfile"
+    # Official Ubuntu DEB822 sources already separate security suites.
+    # Their URIs and Suites fields are adjacent, including on ports architectures.
     cat << 'EOF' >> "$dockerfile"
 RUN set -eu; \
     prefix=''; api=''; \
@@ -17,6 +19,14 @@ RUN set -eu; \
         sed -E -i \
             "s#https?://([a-z]+\.)?(archive\.ubuntu\.com|security\.ubuntu\.com|ports\.ubuntu\.com)/(ubuntu(-ports)?)/?#${prefix}http://mirrors.cernet.edu.cn${api}/\3#g" \
             "$file"; \
+        if [ -n "$api" ]; then \
+            case "$file" in \
+                *.sources) \
+                    sed -E -i '/^URIs: /{N; /\nSuites: [^[:space:]]+-security[[:blank:]]*$/s#(mirror[+]http://mirrors\.cernet\.edu\.cn/api/apt/mirrorlist/ubuntu(-ports)?)(\n)#\1?official_index=1\3#;}' "$file" ;; \
+                *) \
+                    sed -E -i '/^[[:space:]]*deb(-src)?[[:space:]]/s#(mirror[+]http://mirrors\.cernet\.edu\.cn/api/apt/mirrorlist/ubuntu(-ports)?)([[:blank:]]+[^[:space:]]+-security[[:blank:]])#\1?official_index=1\3#g' "$file" ;; \
+            esac; \
+        fi; \
     done
 EOF
     # Docker Hub (disabled): -t mirrorz-org/ubuntu:$tag

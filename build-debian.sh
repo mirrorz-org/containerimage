@@ -17,6 +17,11 @@ RUN set -eu; \
         sed -E -i \
             "s#https?://(deb\.debian\.org|security\.debian\.org)/(debian(-security)?)/?#${prefix}http://mirrors.cernet.edu.cn${api}/\2#g" \
             "$file"; \
+        if [ -n "$api" ]; then \
+            sed -E -i \
+                's#(mirror[+]http://mirrors\.cernet\.edu\.cn/api/apt/mirrorlist/debian-security)([[:space:]]|$)#\1?official_index=1\2#g' \
+                "$file"; \
+        fi; \
     done
 EOF
     # Docker Hub (disabled): -t mirrorz-org/debian:$tag
